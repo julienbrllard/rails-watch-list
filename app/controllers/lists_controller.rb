@@ -3,17 +3,34 @@ class ListsController < ApplicationController
     @lists = List.all
   end
 
-  def show
-    @list = List.find(params[:id])
-  end
-
   def new
     @list = List.new
   end
 
+  def show
+    @list = List.find(params[:id])
+    @bookmarks = Bookmark.all
+    @bookmark = Bookmark.new
+    @movies = Movie.all
+  end
+
   def create
-    @list = List.new(lists_params)
+    @list = List.new(list_params)
     if @list.save
+      redirect_to list_path(@list)
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def edit
+    @list = List.find(params[:id])
+  end
+
+  def update
+    @list = List.find(params[:id])
+    @list.update(list_params)
+    if @list.update(list_params)
       redirect_to list_path(@list)
     else
       render :new, status: :unprocessable_entity
@@ -22,16 +39,12 @@ class ListsController < ApplicationController
 
   def destroy
     @list.destroy
-    redirect_to root_path, status: :see_other
+    redirect_to lists_path, status: :see_other
+  end
+
+  private
+
+  def list_params
+    params.require(:list).permit(:name, :bookmark_ids, :movie_ids)
   end
 end
-
-private
-
-  def lists_params
-    params.require(:list).permit(:name)
-  end
-
-  def set_lists
-    @list = List.find(params[:id])
-  end
